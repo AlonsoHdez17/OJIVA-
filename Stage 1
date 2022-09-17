@@ -1,0 +1,121 @@
+// Señales de control del puente H  
+int in1 = 9;
+int in2 = 8;
+int in3 = 7;
+int in4 = 6;
+
+// Entradas analogicas de Coordenadas X & Y
+#define pinYaxis A0 // JY
+#define pinXaxis A1 // JX
+
+// Variables para modulacion del PWM
+int VELOCIDAD1 = 0;
+int VELOCIDAD2 = 0;
+
+// Enable de los puentes H
+int EnA = 2;
+int EnB = 3;
+
+// Variables para obtener las coordenadas del Joystick
+int xA;
+int yA;
+
+// Metodo para avanzar
+void adelante( ){
+  delay(100);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+
+// Metodo para retroceder
+void atras( ){
+  delay(100);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+}
+
+// Metodo para detener
+void detenido( ){
+  delay(100);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+}
+
+// Metodo para girar a la derecha
+void derecha( ){
+  delay(100);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+}
+
+// Metodo para girar a la izquierda
+void izquierda( ){
+  delay(100);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+
+void setup( ){
+  // Lectura de puerto serial
+  Serial.begin(9600);
+  // Declarar pines para entradas y salidas
+  pinMode(pinYaxis, INPUT);
+  pinMode(pinXaxis, INPUT);
+  pinMode(EnA, OUTPUT);
+  pinMode(EnB, OUTPUT);
+  pinMode(in1, OUTPUT); // MOTOR IZQUIERDO
+  pinMode(in2, OUTPUT); // MOTOR IZQUIERDO
+  pinMode(in3, OUTPUT); // MOTOR DERECHO
+  pinMode(in4, OUTPUT); // MOTOR DERECHO
+}
+
+void loop( ){
+  // Lectura de señal analogica para determinar las coordenadas de los ejes
+  xA = analogRead(pinXaxis);
+  yA = analogRead(pinYaxis);
+
+  // Codigo para debbugear
+  Serial.print(xA);
+  Serial.print("\n");
+  Serial.print(yA);
+  Serial.print("\n");
+  Serial.print(VELOCIDAD1);
+  Serial.print("\n");
+  Serial.print(VELOCIDAD2);
+  Serial.print("\n");
+
+  // Metodos de control de movimiento
+  if (xA >= 550) {// Se determina la coordenada en la que el robot retrocede en el eje x
+    atras( );
+    VELOCIDAD1 = map(xA,550,1023,0,255);
+    VELOCIDAD2 = map(xA,550,1023,0,255);
+  } else if (xA <= 470) {// Se determina la coordenada en la que el robot avanza en el eje x
+    adelante( );
+    VELOCIDAD1 = map(xA,470,0,0,255);
+    VELOCIDAD2 = map(xA,470,0,0,255);
+  } else if (yA >= 550) {// Se determina la coordenada en la que el robot da giro a la izquierda en el eje y
+    izquierda( );
+    VELOCIDAD1 = map(yA,550,1023,0,255);
+    VELOCIDAD2 = map(yA,550,1023,0,255);
+  } else if (yA <= 470) {// Se determina la coordenada en la que el robot da giro a la derecha en el eje y
+    derecha( );
+    VELOCIDAD1 = map(yA,470,0,0,255);
+    VELOCIDAD2 = map(yA,470,0,0,255);
+  } else {// Cualquier otra coordenada el robot se detiene
+    detenido( );
+  }
+
+  analogWrite(EnA, VELOCIDAD1); // Control de velocidad
+  analogWrite(EnB, VELOCIDAD2); // Control de velocidad
+  
+}
